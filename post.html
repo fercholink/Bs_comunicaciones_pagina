@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Selecciona tu Rol</title>
+</head>
+<body>
+    <h2>Selecciona tu rol</h2>
+
+    <label for="email">Tu correo:</label>
+    <input type="email" id="email" placeholder="Ingresa tu correo" required>
+    
+    <br><br>
+
+    <button onclick="enviarDatos('proveedor')">Soy Proveedor</button>
+    <button onclick="enviarDatos('cliente')">Soy Cliente</button>
+
+    <script>
+        function enviarDatos(rol) {
+            const email = document.getElementById("email").value;
+
+            if (!email) {
+                alert("Por favor, ingresa tu correo.");
+                return;
+            }
+
+            fetch("http://localhost:5678/webhook/seleccion", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ rol: rol, email: email }) 
+            })
+            .then(response => response.text())
+            .then(data => console.log("Respuesta:", data))
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.bscomunicaciones.co/sitemap.xml
+
+# Páginas importantes
+Allow: /index.html
+Allow: /whatsapp-verification.html
+Allow: /img/
+Allow: /css/
+Allow: /js/
+
+# Información de contacto
+# BS Comunicaciones Integrales S.A.S.
+# NIT: 1093752731
+# Email: info@bscomunicaciones.com
+# WhatsApp: +573214364223
+# Verification Email: f_nis88@hotmail.com
