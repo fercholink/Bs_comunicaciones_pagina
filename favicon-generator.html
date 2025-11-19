@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        .favicon-container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .favicon-display {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="favicon-container">
+        <h2>BS Comunicaciones - Favicon Generator</h2>
+        <div class="favicon-display">
+            <canvas id="favicon" width="64" height="64"></canvas>
+        </div>
+        <p>Favicon 64x64 - BS Comunicaciones</p>
+        <button onclick="downloadFavicon()">Descargar favicon.png</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('favicon');
+        const ctx = canvas.getContext('2d');
+
+        // Create gradient
+        const gradient = ctx.createLinearGradient(0, 0, 64, 64);
+        gradient.addColorStop(0, '#1e40af');
+        gradient.addColorStop(1, '#3b82f6');
+
+        // Draw background circle
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(32, 32, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw border
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw BS text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('BS', 32, 32);
+
+        function downloadFavicon() {
+            // Create different sizes
+            const sizes = [16, 32, 64];
+            
+            sizes.forEach(size => {
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = size;
+                tempCanvas.height = size;
+                
+                // Scale the original canvas
+                tempCtx.drawImage(canvas, 0, 0, size, size);
+                
+                // Download
+                const link = document.createElement('a');
+                link.download = `favicon-${size}x${size}.png`;
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // Auto generate ICO data
+        function generateICO() {
+            return canvas.toDataURL('image/png');
+        }
+    </script>
+</body>
+</html>

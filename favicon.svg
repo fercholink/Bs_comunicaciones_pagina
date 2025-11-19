@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#grad1)" stroke="#ffffff" stroke-width="2"/>
+  
+  <!-- Letter B -->
+  <path d="M18 16 L18 48 L32 48 Q38 48 42 44 Q46 40 46 34 Q46 30 44 27 Q42 24 38 23 Q42 22 44 19 Q46 16 46 12 Q46 6 42 2 Q38 -2 32 -2 L18 16 Z M24 22 L24 28 L30 28 Q32 28 33 27 Q34 26 34 24 Q34 22 33 21 Q32 20 30 20 L24 22 Z M24 34 L24 42 L32 42 Q34 42 35 41 Q36 40 36 38 Q36 36 35 35 Q34 34 32 34 L24 34 Z" fill="#ffffff" transform="translate(0, 16)"/>
+  
+  <!-- Letter S -->
+  <path d="M48 20 Q48 16 50 14 Q52 12 56 12 Q60 12 62 14 Q64 16 64 20 L58 20 Q58 18 56 18 Q54 18 54 20 Q54 22 56 23 L60 25 Q64 27 64 32 Q64 36 62 38 Q60 40 56 40 Q52 40 50 38 Q48 36 48 32 L54 32 Q54 34 56 34 Q58 34 58 32 Q58 30 56 29 L52 27 Q48 25 48 20 Z" fill="#ffffff" transform="translate(-16, 8)"/>
+</svg>
