@@ -57,9 +57,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Chatbot
     if (chatBubble && chatWindow) {
+        let chatInitialized = false;
+        
         chatBubble.addEventListener('click', function() {
             chatWindow.classList.add('open');
             initializeChat();
+            
+            // Enviar mensaje de bienvenida solo la primera vez
+            if (!chatInitialized) {
+                chatInitialized = true;
+                setTimeout(() => {
+                    addMessageToChat('bot', '¡Hola! Soy el asistente virtual de BS Comunicaciones. ¿En qué puedo ayudarte hoy? 😊');
+                    updateChatStatus('🤖 Asistente local activo', 'local');
+                }, 500);
+            }
         });
 
         if (closeChat) {
@@ -68,20 +79,104 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Configuración del webhook de n8n
+        // Configuración del webhook de n8n - URL de producción
         const N8N_WEBHOOK_URL = 'https://n8n.srv966239.hstgr.cloud/webhook/chatbot_bs';
         
-        // URLs alternativas para fallback
+        // URLs alternativas para fallback (mantenemos solo la de producción por ahora)
         const WEBHOOK_ALTERNATIVES = [
-            'https://n8n.srv966239.hstgr.cloud/webhook/chatbot_bs',
-            'https://n8n.srv966239.hstgr.cloud/webhook-test/chatbot_bs'
+            'https://n8n.srv966239.hstgr.cloud/webhook/chatbot_bs'
         ];
+
+        // Chatbot local como respaldo
+        const LOCAL_RESPONSES = {
+            greetings: [
+                '¡Hola! Soy el asistente de BS Comunicaciones. ¿En qué puedo ayudarte?',
+                '¡Bienvenido a BS Comunicaciones! ¿Cómo puedo asistirte hoy?',
+                '¡Hola! Gracias por contactarnos. ¿En qué servicio estás interesado?'
+            ],
+            services: [
+                'Ofrecemos desarrollo de software, sistemas POS, aplicaciones web, redes y telecomunicaciones. ¿Te interesa algún servicio en particular?',
+                'Nuestros servicios incluyen: desarrollo de software personalizado, sistemas POS para hoteles y restaurantes, instalación de redes, y soporte técnico.',
+                'Somos especialistas en desarrollo de software, sistemas de gestión hotelera, redes de telecomunicaciones y soporte técnico integral.'
+            ],
+            contact: [
+                'Puedes contactarnos al WhatsApp +57 321 436 4223 o al email f_nis88@hotmail.com',
+                'Para más información escríbenos al +57 321 436 4223 o envía un email a f_nis88@hotmail.com',
+                'Nuestro contacto directo es +57 321 436 4223 (WhatsApp) o f_nis88@hotmail.com'
+            ],
+            default: [
+                'Interesante pregunta. Para brindarte información más específica, te recomiendo contactarnos al +57 321 436 4223.',
+                'Gracias por tu consulta. Para una respuesta más detallada, comunícate con nosotros al WhatsApp +57 321 436 4223.',
+                'Podemos ayudarte mejor por WhatsApp al +57 321 436 4223 donde podremos resolver todas tus dudas.'
+            ]
+        };
+
+        // Función para obtener respuesta local
+        function getLocalResponse(message) {
+            const msg = message.toLowerCase();
+            
+            // Saludos
+            if (msg.includes('hola') || msg.includes('buenos') || msg.includes('buenas') || msg.includes('saludo') || msg.includes('hi')) {
+                return LOCAL_RESPONSES.greetings[Math.floor(Math.random() * LOCAL_RESPONSES.greetings.length)];
+            }
+            
+            // Servicios
+            if (msg.includes('servicio') || msg.includes('que hacen') || msg.includes('software') || 
+                msg.includes('pos') || msg.includes('desarrollo') || msg.includes('aplicación') || 
+                msg.includes('web') || msg.includes('sistema') || msg.includes('programación') ||
+                msg.includes('hotel') || msg.includes('restaurante') || msg.includes('red') || 
+                msg.includes('telecomunicación') || msg.includes('soporte')) {
+                return LOCAL_RESPONSES.services[Math.floor(Math.random() * LOCAL_RESPONSES.services.length)];
+            }
+            
+            // Contacto
+            if (msg.includes('contacto') || msg.includes('teléfono') || msg.includes('whatsapp') || 
+                msg.includes('email') || msg.includes('número') || msg.includes('llamar') || 
+                msg.includes('escribir') || msg.includes('comunicar') || msg.includes('celular')) {
+                return LOCAL_RESPONSES.contact[Math.floor(Math.random() * LOCAL_RESPONSES.contact.length)];
+            }
+            
+            // Precios
+            if (msg.includes('precio') || msg.includes('costo') || msg.includes('valor') || 
+                msg.includes('cuanto') || msg.includes('cotización') || msg.includes('presupuesto')) {
+                return 'Para conocer precios y cotizaciones personalizadas, contáctanos al +57 321 436 4223. Cada proyecto es único y adaptamos nuestras soluciones a tus necesidades específicas.';
+            }
+            
+            // Agradecimientos
+            if (msg.includes('gracias') || msg.includes('thanks') || msg.includes('perfecto') || 
+                msg.includes('excelente') || msg.includes('muy bien')) {
+                return '¡De nada! Estamos aquí para ayudarte. Si tienes más preguntas, no dudes en contactarnos al +57 321 436 4223. 😊';
+            }
+            
+            return LOCAL_RESPONSES.default[Math.floor(Math.random() * LOCAL_RESPONSES.default.length)];
+        }
+
+        // Función para actualizar el estado del chat
+        function updateChatStatus(message, type = 'online') {
+            const statusElement = document.querySelector('.chat-status');
+            if (statusElement) {
+                if (type === 'local') {
+                    statusElement.textContent = message;
+                    statusElement.style.color = '#f59e0b'; // Naranja para modo local
+                } else if (type === 'online') {
+                    statusElement.textContent = message;
+                    statusElement.style.color = '#10b981'; // Verde para online
+                } else if (type === 'error') {
+                    statusElement.textContent = message;
+                    statusElement.style.color = '#ef4444'; // Rojo para error
+                }
+            }
+        }
         
         // Función para enviar con múltiples intentos
         async function sendWithRetry(requestData) {
             for (let i = 0; i < WEBHOOK_ALTERNATIVES.length; i++) {
                 const url = WEBHOOK_ALTERNATIVES[i];
                 try {
+                    // Crear AbortController para manejo de timeout
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+                    
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: {
@@ -89,8 +184,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             'Accept': 'application/json'
                         },
                         body: JSON.stringify(requestData),
-                        timeout: 10000 // 10 segundos timeout
+                        signal: controller.signal
                     });
+                    
+                    clearTimeout(timeoutId);
                     
                     if (response.ok) {
                         return response;
@@ -149,6 +246,17 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Actualizar estado de conexión
                         updateConnectionStatus(true);
+                        updateChatStatus('🟢 Asistente inteligente activo', 'online');
+                        
+                        // Verificar si hay error en el workflow de n8n
+                        if (data && typeof data === 'object' && data.message === 'Error in workflow') {
+                            console.log('Error en workflow de n8n, usando chatbot local');
+                            removeTypingIndicator();
+                            updateChatStatus('🤖 Modo asistente local', 'local');
+                            const localResponse = getLocalResponse(message);
+                            addMessageToChat('bot', localResponse);
+                            return;
+                        }
                         
                         // Mostrar respuesta del bot - manejar diferentes formatos
                         let botMessage = '';
@@ -157,6 +265,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             try {
                                 // Intentar parsear si es JSON string
                                 const parsed = JSON.parse(data);
+                                
+                                // Verificar si el parsed también contiene error de workflow
+                                if (parsed.message === 'Error in workflow') {
+                                    console.log('Error en workflow detectado en JSON parseado');
+                                    removeTypingIndicator();
+                                    updateChatStatus('🤖 Modo asistente local', 'local');
+                                    const localResponse = getLocalResponse(message);
+                                    addMessageToChat('bot', localResponse);
+                                    return;
+                                }
+                                
                                 botMessage = parsed.reply || parsed.response || parsed.message || data;
                             } catch (e) {
                                 // Si no es JSON válido, usar como string
@@ -196,17 +315,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Actualizar estado de conexión
                     updateConnectionStatus(false);
                     
-                    // Mostrar mensaje de error específico según el tipo
-                    let errorMessage = '';
-                    if (!navigator.onLine) {
-                        errorMessage = '📶 No hay conexión a internet. Verifica tu conexión e intenta nuevamente.';
-                    } else if (error.message.includes('HTTP')) {
-                        errorMessage = '🔧 El servicio está temporalmente no disponible. Intenta en unos minutos.';
-                    } else {
-                        errorMessage = '⚠️ Lo siento, hay un problema temporal con el chat. Por favor, intenta nuevamente o contáctanos por WhatsApp al +57 321 436 4223.';
-                    }
+                    // Usar chatbot local como respaldo
+                    console.log('Webhook no disponible, usando chatbot local:', error.message);
                     
-                    addMessageToChat('bot', errorMessage);
+                    // Simular un pequeño delay para parecer más natural
+                    setTimeout(() => {
+                        updateChatStatus('🤖 Modo asistente local', 'local');
+                        const localResponse = getLocalResponse(message);
+                        addMessageToChat('bot', localResponse);
+                    }, 1000);
                 }
             }
         }
